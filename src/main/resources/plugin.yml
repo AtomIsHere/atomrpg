@@ -1,0 +1,7 @@
+name: AtomrRPG
+version: '${version}'
+main: com.github.atomishere.atomrpg.AtomRPG
+api-version: 1.19
+authors: [ AtomIsHere ]
+description: RPG Plugin for spigot
+website: https://github.com/AtomIsHere
