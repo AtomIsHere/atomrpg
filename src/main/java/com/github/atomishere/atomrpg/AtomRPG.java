@@ -17,9 +17,11 @@
 
 package com.github.atomishere.atomrpg;
 
+import com.google.inject.Injector;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AtomRPG extends JavaPlugin {
+    private Injector injector;
 
     @Override
     public void onLoad() {
@@ -28,12 +30,13 @@ public final class AtomRPG extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Plugin startup logic
+        AtomRPGModule module = new AtomRPGModule(this);
+        injector = module.createInjector();
 
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        injector = null;
     }
 }
