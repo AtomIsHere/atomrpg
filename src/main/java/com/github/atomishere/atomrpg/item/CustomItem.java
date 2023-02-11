@@ -22,7 +22,7 @@ import com.google.gson.annotations.SerializedName;
 import org.bukkit.Material;
 import org.bukkit.inventory.EquipmentSlot;
 
-public record CustomItem(@SerializedName("display_name") String displayName, @SerializedName("rarity") Rarity rarity, @SerializedName("base") Material baseItem, @SerializedName("attributes") AttributeContainer[] attributes, @SerializedName("health_boost") double healthBoost, @SerializedName("speed_boost") double speedBoost, @SerializedName("slot") EquipmentSlot slot) {
+public record CustomItem(@SerializedName("id") String id, @SerializedName("display_name") String displayName, @SerializedName("rarity") Rarity rarity, @SerializedName("base") Material baseItem, @SerializedName("attributes") AttributeContainer[] attributes, @SerializedName("health_boost") double healthBoost, @SerializedName("speed_boost") double speedBoost, @SerializedName("slot") EquipmentSlot slot) {
     public record AttributeContainer(@SerializedName("attribute") AtomAttribute attribute, @SerializedName("value") double value) {}
 }
 
