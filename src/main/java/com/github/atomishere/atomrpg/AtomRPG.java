@@ -48,7 +48,11 @@ public final class AtomRPG extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        AtomRPGModule module = new AtomRPGModule(this, new PaperCommandManager(this));
+        PaperCommandManager commandManager = new PaperCommandManager(this);
+        commandManager.enableUnstableAPI("brigadier");
+        commandManager.enableUnstableAPI("help");
+
+        AtomRPGModule module = new AtomRPGModule(this, commandManager);
         injector = module.createInjector();
         injector.injectMembers(this);
 
