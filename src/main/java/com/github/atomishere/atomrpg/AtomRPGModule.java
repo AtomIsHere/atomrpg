@@ -18,9 +18,12 @@
 package com.github.atomishere.atomrpg;
 
 import co.aikar.commands.PaperCommandManager;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
 import org.bukkit.plugin.Plugin;
 
 public class AtomRPGModule extends AbstractModule {
@@ -42,5 +45,10 @@ public class AtomRPGModule extends AbstractModule {
         bind(AtomRPG.class).toInstance(plugin);
 
         bind(PaperCommandManager.class).toInstance(commandManager);
+    }
+
+    @Provides
+    public Gson getGson() {
+        return new GsonBuilder().setPrettyPrinting().create();
     }
 }
