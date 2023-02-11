@@ -17,15 +17,21 @@
 
 package com.github.atomishere.atomrpg;
 
+import co.aikar.commands.PaperCommandManager;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
+import com.github.atomishere.atomrpg.commands.CommandRegistrar;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import io.github.classgraph.ClassGraph;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AtomRPG extends JavaPlugin {
     private Injector injector;
+
+    @Inject
+    private CommandRegistrar commandRegistrar;
 
     @Inject
     private PlayerAttributeManager attributeManager;
@@ -35,16 +41,20 @@ public final class AtomRPG extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        ClassGraph.CIRCUMVENT_ENCAPSULATION = ClassGraph.CircumventEncapsulationMethod.NARCISSUS;
+
         PluginKeys.init(this);
     }
 
     @Override
     public void onEnable() {
-        AtomRPGModule module = new AtomRPGModule(this);
+        AtomRPGModule module = new AtomRPGModule(this, new PaperCommandManager(this));
         injector = module.createInjector();
         injector.injectMembers(this);
 
         attributeManager.enable();
+
+        commandRegistrar.registerCommands();
 
         Bukkit.getServer().getPluginManager().registerEvents(attributeListener, this);
     }

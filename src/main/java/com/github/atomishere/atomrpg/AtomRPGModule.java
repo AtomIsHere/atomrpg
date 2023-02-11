@@ -17,6 +17,7 @@
 
 package com.github.atomishere.atomrpg;
 
+import co.aikar.commands.PaperCommandManager;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -24,9 +25,11 @@ import org.bukkit.plugin.Plugin;
 
 public class AtomRPGModule extends AbstractModule {
     private final AtomRPG plugin;
+    private final PaperCommandManager commandManager;
 
-    public AtomRPGModule(AtomRPG plugin) {
+    public AtomRPGModule(AtomRPG plugin, PaperCommandManager commandManager) {
         this.plugin = plugin;
+        this.commandManager = commandManager;
     }
 
     public Injector createInjector() {
@@ -37,5 +40,7 @@ public class AtomRPGModule extends AbstractModule {
     protected void configure() {
         bind(Plugin.class).toInstance(plugin);
         bind(AtomRPG.class).toInstance(plugin);
+
+        bind(PaperCommandManager.class).toInstance(commandManager);
     }
 }

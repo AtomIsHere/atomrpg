@@ -16,12 +16,24 @@ repositories {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
+
+    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
+}
+
+compileJava {
+    options.compilerArgs += ["-parameters"]
+    options.fork = true
+    options.forkOptions.executable = "javac"
 }
 
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT'
 
     implementation('com.google.inject:guice:5.1.0')
+    implementation('io.github.classgraph:classgraph:4.8.154')
+    implementation('io.github.toolfactory:narcissus:1.0.7')
+
+    implementation('co.aikar:acf-paper:0.5.1-SNAPSHOT')
 }
 
 def targetJavaVersion = 17
@@ -48,3 +60,10 @@ processResources {
         expand props
     }
 }
+
+shadowJar {
+    relocate 'co.aikar.commands', 'com.github.atomishere.atomrpg'
+    relocate 'co.aikar.locales', 'com.github.atomishere.locales'
+}
+
+build.dependsOn shadowJar
