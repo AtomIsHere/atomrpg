@@ -57,7 +57,7 @@ public class PlayerAttributeInstance {
 
     @SuppressWarnings("DuplicatedCode")
     public double getValueWithBaseModifiers() {
-        double value = 0.0D;
+        double value = getBaseValue();
         double scalar = 1.0D;
 
         for(BaseModifier modifier : baseModifiers) {
