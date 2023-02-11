@@ -17,11 +17,21 @@
 
 package com.github.atomishere.atomrpg;
 
+import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
+import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class AtomRPG extends JavaPlugin {
     private Injector injector;
+
+    @Inject
+    private PlayerAttributeManager attributeManager;
+
+    @Inject
+    private PlayerAttributeListener attributeListener;
 
     @Override
     public void onLoad() {
@@ -32,11 +42,17 @@ public final class AtomRPG extends JavaPlugin {
     public void onEnable() {
         AtomRPGModule module = new AtomRPGModule(this);
         injector = module.createInjector();
+        injector.injectMembers(this);
 
+        attributeManager.enable();
+
+        Bukkit.getServer().getPluginManager().registerEvents(attributeListener, this);
     }
 
     @Override
     public void onDisable() {
+        attributeManager.disable();
+
         injector = null;
     }
 }

@@ -22,6 +22,7 @@ import org.bukkit.ChatColor;
 public enum AtomAttribute {
     DEFENSE("Defense", ChatColor.GREEN, 0.0D, Double.MAX_VALUE),
     STRENGTH("Strength", ChatColor.RED, 0.0D, Double.MAX_VALUE),
+    DAMAGE("Damage", ChatColor.BLUE, 0.0D, Double.MAX_VALUE),
     INTELLIGENCE("Intelligence", ChatColor.AQUA, 0.0D, Double.MAX_VALUE),
     CRIT_DAMAGE("Crit Damage", ChatColor.BLUE, 0.0D, Double.MAX_VALUE),
     CRIT_CHANCE("Crit Chance", ChatColor.BLUE, 0.0D, 100.0D);
