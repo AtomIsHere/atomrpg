@@ -44,6 +44,10 @@ public final class AtomRPG extends JavaPlugin {
         ClassGraph.CIRCUMVENT_ENCAPSULATION = ClassGraph.CircumventEncapsulationMethod.NARCISSUS;
 
         PluginKeys.init(this);
+
+        if(!getDataFolder().exists()) {
+            getDataFolder().mkdir();
+        }
     }
 
     @Override
