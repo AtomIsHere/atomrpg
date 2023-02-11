@@ -30,6 +30,10 @@ public final class ItemUtils {
     }
 
     public static Optional<ItemAttributable> getItemAttribute(ItemStack item) {
+        if(item.getItemMeta() == null) {
+            return Optional.empty();
+        }
+
         PersistentDataContainer container = item.getItemMeta().getPersistentDataContainer();
 
         if(!container.has(PluginKeys.getAtomAttributeKey(), ItemAttributable.DATA_TYPE)) {
