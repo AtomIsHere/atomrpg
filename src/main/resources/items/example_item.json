@@ -1,0 +1,22 @@
+{
+  "display_name": "Example Stick",
+  "rarity": "UNCOMMON",
+  "base": "STICK",
+  "attributes": [
+    {
+      "attribute": "DAMAGE",
+      "value": 10.0
+    },
+    {
+      "attribute": "STRENGTH",
+      "value": 5.0
+    },
+    {
+      "attribute": "CRIT_DAMAGE",
+      "value": 10.0
+    }
+  ],
+  "health_boost": 10.0,
+  "speed_boost": 5.0,
+  "slot": "HAND"
+}
