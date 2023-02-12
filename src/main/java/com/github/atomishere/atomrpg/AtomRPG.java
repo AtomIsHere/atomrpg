@@ -21,6 +21,7 @@ import co.aikar.commands.PaperCommandManager;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
 import com.github.atomishere.atomrpg.commands.CommandRegistrar;
+import com.github.atomishere.atomrpg.item.ItemHandler;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import io.github.classgraph.ClassGraph;
@@ -33,6 +34,8 @@ public final class AtomRPG extends JavaPlugin {
     @Inject
     private CommandRegistrar commandRegistrar;
 
+    @Inject
+    private ItemHandler itemHandler;
     @Inject
     private PlayerAttributeManager attributeManager;
 
@@ -60,6 +63,7 @@ public final class AtomRPG extends JavaPlugin {
         injector = module.createInjector();
         injector.injectMembers(this);
 
+        itemHandler.loadItems();
         attributeManager.enable();
 
         commandRegistrar.registerCommands();
