@@ -53,7 +53,7 @@ public class PlayerAttributeCommand extends BaseCommand {
                                 a.getAttribute().getDisplayColor() +
                                 a.getAttribute().getDisplayName() +
                                 ": " +
-                                a.getValueWithBaseModifiers()
+                                a.getValueWithAllModifiers()
                         )
                 );
     }

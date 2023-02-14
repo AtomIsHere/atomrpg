@@ -27,7 +27,7 @@ public class ItemAttributable {
     private final Map<AtomAttribute, List<ItemModifier>> attributeMap = new HashMap<>();
 
     public void addModifier(ItemModifier modifier) {
-        if(attributeMap.containsKey(modifier.attribute())) {
+        if(!attributeMap.containsKey(modifier.attribute())) {
             attributeMap.put(modifier.attribute(), new ArrayList<>());
         }
 
@@ -45,5 +45,23 @@ public class ItemAttributable {
 
     public Map<AtomAttribute, List<ItemModifier>> getAttributeMap() {
         return attributeMap;
+    }
+
+    @SuppressWarnings("DuplicatedCode")
+    public double getValue(AtomAttribute attribute) {
+        return getModifiers(attribute).map(ml -> {
+            double scalar = 1.0D;
+            double value = 0.0D;
+
+            for(ItemModifier modifier : ml) {
+                switch (modifier.operation()) {
+                    case ADDITION -> value += modifier.value();
+                    case SUBTRACTION -> value -= modifier.value();
+                    case MULTIPLICATION -> scalar *= modifier.value();
+                    case DIVISION -> scalar /= modifier.value();
+                }
+            }
+            return scalar * value;
+        }).orElse(0.0D);
     }
 }

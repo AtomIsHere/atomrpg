@@ -17,19 +17,32 @@
 
 package com.github.atomishere.atomrpg.item;
 
+import com.github.atomishere.atomrpg.PluginKeys;
+import com.github.atomishere.atomrpg.attributes.AtomAttribute;
+import com.github.atomishere.atomrpg.attributes.Operation;
+import com.github.atomishere.atomrpg.attributes.item.ItemAttributable;
+import com.github.atomishere.atomrpg.attributes.item.ItemModifier;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.JarURLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -40,6 +53,8 @@ public class ItemHandler {
 
     @Inject
     private Gson gson;
+    @Inject
+    private CustomItemDataType dataType;
 
     public void loadItems() {
         JarURLConnection connection;
@@ -75,5 +90,114 @@ public class ItemHandler {
         }
 
         return Optional.of(registeredItems.get(id));
+    }
+
+    public Map<String, CustomItem> getRegisteredItems() {
+        return registeredItems;
+    }
+
+    public boolean hasItem(String id) {
+        return registeredItems.containsKey(id);
+    }
+
+    public ItemStack createItem(CustomItem item) {
+        ItemAttributable itemAttributes = new ItemAttributable();
+        Arrays.stream(item.attributes())
+                .map(a -> new ItemModifier(
+                        "base",
+                        a.attribute(),
+                        item.slot(),
+                        Operation.ADDITION,
+                        a.value())
+                )
+                .forEach(itemAttributes::addModifier);
+
+        ItemStack stack = new ItemStack(item.baseItem());
+        ItemMeta meta = stack.getItemMeta();
+
+        meta.displayName(Component.text(item.displayName()).color(item.rarity().getDisplayColor()));
+        meta.addItemFlags(
+                ItemFlag.HIDE_ITEM_SPECIFICS,
+                ItemFlag.HIDE_ATTRIBUTES,
+                ItemFlag.HIDE_DESTROYS,
+                ItemFlag.HIDE_DYE,
+                ItemFlag.HIDE_ENCHANTS,
+                ItemFlag.HIDE_PLACED_ON,
+                ItemFlag.HIDE_UNBREAKABLE
+        );
+        meta.setUnbreakable(true);
+
+        meta.getPersistentDataContainer().set(PluginKeys.getCustomItemKey(), dataType, item);
+        meta.getPersistentDataContainer().set(PluginKeys.getAtomAttributeKey(), ItemAttributable.DATA_TYPE, itemAttributes);
+
+        stack.setItemMeta(meta);
+
+        buildLore(stack);
+
+        return stack;
+    }
+
+    public void buildLore(ItemStack stack) {
+        ItemMeta meta = stack.getItemMeta();
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        if(!dataContainer.has(PluginKeys.getCustomItemKey(), dataType)) {
+            return;
+        }
+        CustomItem item = dataContainer.get(PluginKeys.getCustomItemKey(), dataType);
+
+        List<Component> loreComponentList = new ArrayList<>();
+
+        if(dataContainer.has(PluginKeys.getAtomAttributeKey(), ItemAttributable.DATA_TYPE)) {
+            ItemAttributable itemAttributes = dataContainer.get(PluginKeys.getAtomAttributeKey(), ItemAttributable.DATA_TYPE);
+
+            for(Map.Entry<AtomAttribute, List<ItemModifier>> entry : itemAttributes.getAttributeMap().entrySet()) {
+                double baseValue = entry.getValue()
+                        .stream()
+                        .filter(im -> im.name().equals("base"))
+                        .map(ItemModifier::value)
+                        .findAny()
+                        .orElse(0.0D);
+                double total = itemAttributes.getValue(entry.getKey());
+
+                TextComponent attributeComponent = Component.text(entry.getKey().getDisplayName() + ": ").color(NamedTextColor.WHITE).append(Component.text(Math.round(total)).color(NamedTextColor.BLUE));
+                if(Math.round(total) - Math.round(baseValue) != 0) {
+                    String sign = total > 0 ? "+" : "-";
+                    attributeComponent.append(Component.text("(" + sign + Math.round(total - baseValue) + ")").color(NamedTextColor.BLUE));
+                }
+
+                loreComponentList.add(attributeComponent);
+            }
+        }
+        loreComponentList.add(Component.text(""));
+
+        loreComponentList.add(Component.text(item.rarity().getDisplayName()).color(item.rarity().getDisplayColor()).decorate(TextDecoration.BOLD));
+
+        meta.lore(loreComponentList);
+        stack.setItemMeta(meta);
+    }
+
+    public static class CustomItemDataType implements PersistentDataType<String, CustomItem> {
+        @Inject
+        private ItemHandler handler;
+
+        @Override
+        public @NotNull Class<String> getPrimitiveType() {
+            return String.class;
+        }
+
+        @Override
+        public @NotNull Class<CustomItem> getComplexType() {
+            return CustomItem.class;
+        }
+
+        @Override
+        public @NotNull String toPrimitive(@NotNull CustomItem complex, @NotNull PersistentDataAdapterContext context) {
+            return complex.id();
+        }
+
+        @Override
+        public @NotNull CustomItem fromPrimitive(@NotNull String primitive, @NotNull PersistentDataAdapterContext context) {
+            return handler.getRegisteredItem(primitive).orElseThrow(() -> new RuntimeException("Item: " + primitive + " does not exist"));
+        }
     }
 }

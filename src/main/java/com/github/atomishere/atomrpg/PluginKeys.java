@@ -21,13 +21,18 @@ import org.bukkit.NamespacedKey;
 
 public final class PluginKeys {
     private static NamespacedKey ATOM_ATTRIBUTE_KEY;
+    private static NamespacedKey CUSTOM_ITEM_KEY;
 
     static void init(AtomRPG plugin) {
         ATOM_ATTRIBUTE_KEY = new NamespacedKey(plugin, "atom_attributes");
+        CUSTOM_ITEM_KEY = new NamespacedKey(plugin, "custom_item");
     }
 
     public static NamespacedKey getAtomAttributeKey() {
         return ATOM_ATTRIBUTE_KEY;
+    }
+    public static NamespacedKey getCustomItemKey() {
+        return CUSTOM_ITEM_KEY;
     }
 
     private PluginKeys() {

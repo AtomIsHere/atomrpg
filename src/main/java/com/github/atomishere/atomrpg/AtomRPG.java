@@ -17,10 +17,14 @@
 
 package com.github.atomishere.atomrpg;
 
+import co.aikar.commands.CommandCompletions;
+import co.aikar.commands.CommandContexts;
+import co.aikar.commands.InvalidCommandArgument;
 import co.aikar.commands.PaperCommandManager;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
 import com.github.atomishere.atomrpg.commands.CommandRegistrar;
+import com.github.atomishere.atomrpg.item.CustomItem;
 import com.github.atomishere.atomrpg.item.ItemHandler;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -59,6 +63,9 @@ public final class AtomRPG extends JavaPlugin {
         commandManager.enableUnstableAPI("brigadier");
         commandManager.enableUnstableAPI("help");
 
+        registerCommandCompletions(commandManager.getCommandCompletions());
+        registerCommandContexts(commandManager.getCommandContexts());
+
         AtomRPGModule module = new AtomRPGModule(this, commandManager);
         injector = module.createInjector();
         injector.injectMembers(this);
@@ -76,5 +83,19 @@ public final class AtomRPG extends JavaPlugin {
         attributeManager.disable();
 
         injector = null;
+    }
+
+    private void registerCommandCompletions(CommandCompletions<?> completions) {
+        completions.registerCompletion("customitem", c -> itemHandler
+                .getRegisteredItems()
+                .keySet());
+    }
+
+    private void registerCommandContexts(CommandContexts<?> contexts) {
+        contexts.registerContext(CustomItem.class, c -> {
+            String id = c.popFirstArg();
+            return itemHandler.getRegisteredItem(id)
+                    .orElseThrow(() -> new InvalidCommandArgument("Item not found: " + id));
+        });
     }
 }
