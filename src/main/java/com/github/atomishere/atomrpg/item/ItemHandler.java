@@ -22,6 +22,9 @@ import com.github.atomishere.atomrpg.attributes.AtomAttribute;
 import com.github.atomishere.atomrpg.attributes.Operation;
 import com.github.atomishere.atomrpg.attributes.item.ItemAttributable;
 import com.github.atomishere.atomrpg.attributes.item.ItemModifier;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,6 +32,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -49,6 +54,10 @@ import java.util.jar.JarFile;
 
 @Singleton
 public class ItemHandler {
+    private static final ImmutableMap<Attribute, String> DISPLAYABLE_BUKKIT_ATTRIBUTES = new ImmutableMap.Builder<Attribute, String>()
+            .put(Attribute.GENERIC_MAX_HEALTH, "Health")
+            .put(Attribute.GENERIC_MOVEMENT_SPEED, "Speed")
+            .build();
     private final Map<String, CustomItem> registeredItems = new HashMap<>();
 
     @Inject
@@ -127,6 +136,13 @@ public class ItemHandler {
         );
         meta.setUnbreakable(true);
 
+        if(item.healthBoost() != 0.0D) {
+            meta.addAttributeModifier(Attribute.GENERIC_MAX_HEALTH, new AttributeModifier("base", item.healthBoost(), AttributeModifier.Operation.ADD_NUMBER));
+        }
+        if(item.speedBoost() != 0.0D) {
+            meta.addAttributeModifier(Attribute.GENERIC_MOVEMENT_SPEED, new AttributeModifier("base", item.speedBoost(), AttributeModifier.Operation.ADD_NUMBER));
+        }
+
         meta.getPersistentDataContainer().set(PluginKeys.getCustomItemKey(), dataType, item);
         meta.getPersistentDataContainer().set(PluginKeys.getAtomAttributeKey(), ItemAttributable.DATA_TYPE, itemAttributes);
 
@@ -158,22 +174,51 @@ public class ItemHandler {
                         .findAny()
                         .orElse(0.0D);
                 double total = itemAttributes.getValue(entry.getKey());
-
-                TextComponent attributeComponent = Component.text(entry.getKey().getDisplayName() + ": ").color(NamedTextColor.WHITE).append(Component.text(Math.round(total)).color(NamedTextColor.BLUE));
-                if(Math.round(total) - Math.round(baseValue) != 0) {
-                    String sign = total > 0 ? "+" : "-";
-                    attributeComponent.append(Component.text("(" + sign + Math.round(total - baseValue) + ")").color(NamedTextColor.BLUE));
-                }
-
-                loreComponentList.add(attributeComponent);
+                loreComponentList.add(createAttributeComponent(entry.getKey().name(), baseValue, total));
             }
         }
+
+        for(Map.Entry<Attribute, String> entry : DISPLAYABLE_BUKKIT_ATTRIBUTES.entrySet()) {
+            Multimap<Attribute, AttributeModifier> attributes = meta.getAttributeModifiers(item.slot());
+
+            if(attributes.containsKey(entry.getKey())) {
+                double baseValue = attributes.get(entry.getKey())
+                        .stream()
+                        .filter(am -> am.getName().equals("base") && am.getOperation().equals(AttributeModifier.Operation.ADD_NUMBER))
+                        .findAny()
+                        .map(AttributeModifier::getAmount)
+                        .orElse(0.0D);
+                AtomicDouble total = new AtomicDouble();
+                attributes.get(entry.getKey())
+                        .stream()
+                        .filter(am -> am.getOperation().equals(AttributeModifier.Operation.ADD_NUMBER))
+                        .forEach(am -> total.addAndGet(am.getAmount()));
+
+                loreComponentList.add(createAttributeComponent(entry.getValue(), baseValue, total.get()));
+            }
+        }
+
         loreComponentList.add(Component.text(""));
 
         loreComponentList.add(Component.text(item.rarity().getDisplayName()).color(item.rarity().getDisplayColor()).decorate(TextDecoration.BOLD));
 
         meta.lore(loreComponentList);
         stack.setItemMeta(meta);
+    }
+
+    private TextComponent createAttributeComponent(String attributeName, double baseValue, double total) {
+        TextComponent attributeComponent = Component.text(attributeName + ": ")
+                .color(NamedTextColor.WHITE)
+                .append(
+                        Component.text(Math.round(total))
+                                .color(NamedTextColor.BLUE)
+                );
+        if(Math.round(total) - Math.round(baseValue) != 0) {
+            String sign = total > 0 ? "+" : "-";
+            attributeComponent.append(Component.text("(" + sign + Math.round(total - baseValue) + ")").color(NamedTextColor.BLUE));
+        }
+
+        return attributeComponent;
     }
 
     public static class CustomItemDataType implements PersistentDataType<String, CustomItem> {
