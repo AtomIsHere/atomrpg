@@ -35,6 +35,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.github.atomishere.atomrpg.utils.ReflectionUtils.DEOBF_ENV;
+
 public class AtomEntities {
     private static boolean registered = false;
 
@@ -78,8 +80,8 @@ public class AtomEntities {
         }
 
         try {
-            Field frozenField = MappedRegistry.class.getDeclaredField("frozen");
-            Field intrusiveHolderField = MappedRegistry.class.getDeclaredField("unregisteredIntrusiveHolders"); // TODO: Check for mapped server
+            Field frozenField = MappedRegistry.class.getDeclaredField(DEOBF_ENV ? "frozen" : "l");
+            Field intrusiveHolderField = MappedRegistry.class.getDeclaredField(DEOBF_ENV ? "unregisteredIntrusiveHolders" : "m");
             intrusiveHolderField.setAccessible(true);
             frozenField.setAccessible(true);
 
@@ -93,10 +95,8 @@ public class AtomEntities {
         entityMap.values().forEach(CustomEntityType::register);
         BuiltInRegistries.ENTITY_TYPE.freeze();
 
-
-
         try {
-            Field defaultAttributesField = DefaultAttributes.class.getDeclaredField("SUPPLIERS");
+            Field defaultAttributesField = DefaultAttributes.class.getDeclaredField(DEOBF_ENV ? "SUPPLIERS" : "b");
 
             Field modifiersField = Narcissus.findField(Field.class, "modifiers");
 
