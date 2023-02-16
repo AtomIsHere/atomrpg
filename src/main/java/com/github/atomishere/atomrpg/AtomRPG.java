@@ -24,6 +24,8 @@ import co.aikar.commands.PaperCommandManager;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
 import com.github.atomishere.atomrpg.commands.CommandRegistrar;
+import com.github.atomishere.atomrpg.entity.AtomEntities;
+import com.github.atomishere.atomrpg.entity.CustomEntityType;
 import com.github.atomishere.atomrpg.item.CustomItem;
 import com.github.atomishere.atomrpg.item.ItemHandler;
 import com.google.inject.Inject;
@@ -51,6 +53,7 @@ public final class AtomRPG extends JavaPlugin {
         ClassGraph.CIRCUMVENT_ENCAPSULATION = ClassGraph.CircumventEncapsulationMethod.NARCISSUS;
 
         PluginKeys.init(this);
+        AtomEntities.register();
 
         if(!getDataFolder().exists()) {
             getDataFolder().mkdir();
@@ -82,12 +85,16 @@ public final class AtomRPG extends JavaPlugin {
     public void onDisable() {
         attributeManager.disable();
 
+        AtomEntities.unregister();
         injector = null;
     }
 
     private void registerCommandCompletions(CommandCompletions<?> completions) {
         completions.registerCompletion("customitem", c -> itemHandler
                 .getRegisteredItems()
+                .keySet());
+        completions.registerCompletion("atomentity", c -> AtomEntities
+                .getEntityMap()
                 .keySet());
     }
 
@@ -96,6 +103,11 @@ public final class AtomRPG extends JavaPlugin {
             String id = c.popFirstArg();
             return itemHandler.getRegisteredItem(id)
                     .orElseThrow(() -> new InvalidCommandArgument("Item not found: " + id));
+        });
+        contexts.registerContext(CustomEntityType.class, c -> {
+            String id = c.popFirstArg();
+            return AtomEntities.get(id)
+                    .orElseThrow(() -> new InvalidCommandArgument("Entity not found: " + id));
         });
     }
 }
