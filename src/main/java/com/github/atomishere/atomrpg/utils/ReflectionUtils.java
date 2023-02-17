@@ -21,10 +21,14 @@ import net.minecraft.core.MappedRegistry;
 
 import java.util.Arrays;
 
-public class ReflectionUtils {
+public final class ReflectionUtils {
     public static final boolean DEOBF_ENV;
 
     static {
         DEOBF_ENV = Arrays.stream(MappedRegistry.class.getDeclaredFields()).anyMatch(f -> f.getName().equals("frozen"));
+    }
+
+    private ReflectionUtils() {
+        throw new AssertionError();
     }
 }
