@@ -50,4 +50,8 @@ public class PlayerAttributable {
     public void overrideDefault(AtomAttribute attribute, double defaultValue) {
         defaults.put(attribute, defaultValue);
     }
+
+    public UUID getPlayer() {
+        return player;
+    }
 }
