@@ -17,17 +17,28 @@
 
 package com.github.atomishere.atomrpg.entity;
 
+import com.github.atomishere.atomrpg.entity.adapter.ZombieAdapter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.level.Level;
 
-public class TestEntity extends Zombie {
+public class TestEntity extends ZombieAdapter<TestEntity> {
     public TestEntity(EntityType<? extends Zombie> type, Level world) {
-        super(type, world);
+        super(type, world, "Test Entity", 1);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
         return Zombie.createAttributes();
+    }
+
+    @Override
+    public CustomEntityType<TestEntity> getCustomType() {
+        return AtomEntities.TEST_ENTITY;
+    }
+
+    @Override
+    public TestEntity get() {
+        return this;
     }
 }
