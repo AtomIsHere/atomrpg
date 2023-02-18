@@ -24,6 +24,8 @@ import co.aikar.commands.PaperCommandManager;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeListener;
 import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
 import com.github.atomishere.atomrpg.commands.CommandRegistrar;
+import com.github.atomishere.atomrpg.damage.DamageHandler;
+import com.github.atomishere.atomrpg.damage.nms.DamageListener;
 import com.github.atomishere.atomrpg.entity.AtomEntities;
 import com.github.atomishere.atomrpg.entity.CustomEntityType;
 import com.github.atomishere.atomrpg.item.CustomItem;
@@ -44,9 +46,13 @@ public final class AtomRPG extends JavaPlugin {
     private ItemHandler itemHandler;
     @Inject
     private PlayerAttributeManager attributeManager;
+    @Inject
+    private DamageHandler damageHandler;
 
     @Inject
     private PlayerAttributeListener attributeListener;
+    @Inject
+    private DamageListener damageListener;
 
     @Override
     public void onLoad() {
@@ -79,11 +85,13 @@ public final class AtomRPG extends JavaPlugin {
         commandRegistrar.registerCommands();
 
         Bukkit.getServer().getPluginManager().registerEvents(attributeListener, this);
+        Bukkit.getServer().getPluginManager().registerEvents(damageListener, this);
     }
 
     @Override
     public void onDisable() {
         attributeManager.disable();
+        damageHandler.clear();
 
         AtomEntities.unregister();
         injector = null;

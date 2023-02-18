@@ -54,6 +54,10 @@ public class DamageHandler {
         return modifiers;
     }
 
+    public ImmutableList<DamageModifier> getBaseModifiers() {
+        return baseModifiers;
+    }
+
     public void clear() {
         modifiers.clear();
     }
