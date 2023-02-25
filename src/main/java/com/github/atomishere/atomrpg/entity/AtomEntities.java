@@ -41,6 +41,7 @@ public class AtomEntities {
     private static boolean registered = false;
 
     public static final CustomEntityType<TestEntity> TEST_ENTITY = new CustomEntityType<>("test_entity", TestEntity.class, EntityType.ZOMBIE, TestEntity::new);
+    public static final CustomEntityType<DisplayEntity> DISPLAY_ENTITY = new CustomEntityType<>("display_entity", DisplayEntity.class, EntityType.ARMOR_STAND, DisplayEntity::new);
 
     private static final ImmutableMap<String, CustomEntityType<?>> entityMap;
 
