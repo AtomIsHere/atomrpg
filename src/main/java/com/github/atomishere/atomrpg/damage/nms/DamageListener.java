@@ -21,10 +21,15 @@ import com.github.atomishere.atomrpg.attributes.player.PlayerAttributeManager;
 import com.github.atomishere.atomrpg.damage.AtomDamageSource;
 import com.github.atomishere.atomrpg.damage.DamageHandler;
 import com.github.atomishere.atomrpg.damage.DamageModifier;
+import com.github.atomishere.atomrpg.entity.AtomEntities;
+import com.github.atomishere.atomrpg.entity.DisplayEntity;
 import com.github.atomishere.atomrpg.entity.adapter.AtomEntityAdapter;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_19_R2.entity.CraftEntity;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,6 +38,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.Arrays;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Singleton
 public class DamageListener implements Listener {
@@ -75,8 +82,30 @@ public class DamageListener implements Listener {
             event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
             // Completely override all other forms of damage
             Arrays.stream(EntityDamageEvent.DamageModifier.values())
-                    .filter(dm -> !dm.equals(EntityDamageEvent.DamageModifier.BASE))
+                    .filter(dm -> !dm.equals(EntityDamageEvent.DamageModifier.BASE) && event.isApplicable(dm))
                     .forEach(dm -> event.setDamage(dm, 0.0D));
+
+            createDamageDisplay(damage, damageSource.damaged(), damageSource.attacker().getLocation().getYaw(), damageSource.attacker().getLocation().getPitch());
         }
+    }
+
+    private void createDamageDisplay(double damage, Entity entityDamaged, float yaw, float pitch) {
+        double height = entityDamaged.getLocation().y() + entityDamaged.getHeight();
+
+        double maxX = entityDamaged.getLocation().x() + (entityDamaged.getBoundingBox().getWidthX()/2.0D);
+        double minX = entityDamaged.getLocation().x() - (entityDamaged.getBoundingBox().getWidthX()/2.0D);
+
+        double maxZ = entityDamaged.getLocation().z() + (entityDamaged.getBoundingBox().getWidthZ()/2.0D);
+        double minZ = entityDamaged.getLocation().z() - (entityDamaged.getBoundingBox().getWidthZ()/2.0D);
+
+        Random random = ThreadLocalRandom.current();
+        Location displayLoc = new Location(entityDamaged.getWorld(), random.nextDouble(minX, maxX), height, random.nextDouble(minZ, maxZ), yaw, pitch);
+
+        AtomEntities.DISPLAY_ENTITY.spawn(displayLoc).ifPresent(e -> {
+            DisplayEntity display = (DisplayEntity) ((CraftEntity) e).getHandle();
+
+            display.setDisplayName(Component.text(Math.round(damage)));
+            display.startTimer(40);
+        });
     }
 }
