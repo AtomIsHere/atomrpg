@@ -30,6 +30,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+
+import java.util.Arrays;
 
 @Singleton
 public class DamageListener implements Listener {
@@ -69,7 +72,11 @@ public class DamageListener implements Listener {
                 damage = modifier.apply(damageSource, damage);
             }
 
-            event.setDamage(damage);
+            event.setDamage(EntityDamageEvent.DamageModifier.BASE, damage);
+            // Completely override all other forms of damage
+            Arrays.stream(EntityDamageEvent.DamageModifier.values())
+                    .filter(dm -> !dm.equals(EntityDamageEvent.DamageModifier.BASE))
+                    .forEach(dm -> event.setDamage(dm, 0.0D));
         }
     }
 }
